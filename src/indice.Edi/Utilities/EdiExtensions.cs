@@ -190,7 +190,7 @@ namespace indice.Edi.Utilities
                 return dayShift
                 ? dt.AddDays(1)
                 : dt;
-            } 
+            }
             return null;
         }
 
@@ -242,7 +242,7 @@ namespace indice.Edi.Utilities
         /// <returns></returns>
         public static string ToEdiString(this double value, Picture? picture, char? decimalMark) =>
             ToEdiString((decimal?)value, picture, decimalMark);
-        
+
         /// <summary>
         /// Converts the given value into a string representation according to the <see cref="IEdiGrammar"/> and the value spec.
         /// </summary>
@@ -290,7 +290,7 @@ namespace indice.Edi.Utilities
         /// <returns></returns>
         public static string ToEdiString(this int value, Picture? picture) =>
             ToEdiString((long?)value, picture);
-        
+
         /// <summary>
         /// Converts the given value into a string representation according to the <see cref="IEdiGrammar"/> and the value spec.
         /// </summary>
@@ -311,13 +311,22 @@ namespace indice.Edi.Utilities
             if (!value.HasValue)
                 return null;
             var provider = NumberFormatInfo.InvariantInfo;
-             if (picture.HasValue && picture.Value.Kind == PictureKind.Numeric && picture.Value.HasPrecision) {
+            if (picture.HasValue && picture.Value.Kind == PictureKind.Numeric && picture.Value.HasPrecision) {
                 var pic = picture.Value;
                 var number = value.Value;
-                var integer = (int)(number * (decimal)Math.Pow(10.0, pic.Precision));
-                var padding = new string(Enumerable.Range(0, pic.Scale).Select(i => '0').ToArray());
-                var result = integer.ToString(padding);
-                return result;
+
+                if (decimalMark.HasValue) {
+                    var integer = (int)number;
+                    var decimalInteger = (int)((number - integer) * (decimal)Math.Pow(10.0, pic.Precision));
+                    var decimalString = decimalInteger.ToString();
+                    var padding = new string(Enumerable.Range(0, pic.Precision- decimalString.Length).Select(i => '0').ToArray());
+                    return integer.ToString() + decimalMark.Value + decimalString + padding;
+                } else {
+                    var integer = (int)(number * (decimal)Math.Pow(10.0, pic.Precision));
+                    var padding = new string(Enumerable.Range(0, pic.Scale).Select(i => '0').ToArray());
+                    var result = integer.ToString(padding);
+                    return result;
+                }
             } else if (decimalMark.HasValue) {
                 if (provider.NumberDecimalSeparator != decimalMark.ToString()) {
                     provider = provider.Clone() as NumberFormatInfo;
