@@ -56,6 +56,10 @@ namespace indice.Edi
                 _charEscapeFlags[Grammar.SegmentNameDelimiter] =
                 _charEscapeFlags[Grammar.SegmentTerminator] =
                 _charEscapeFlags[Grammar.ReleaseCharacter.Value] = true;
+
+                if(Grammar.DecimalMark.HasValue) {
+                    _charEscapeFlags[Grammar.DecimalMark.Value] = true;
+                }
             }
         }
 
